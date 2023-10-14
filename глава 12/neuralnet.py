@@ -19,15 +19,15 @@ class NeuralNetMLP(object):
     shuffle : bool (default: True)
         Тасовать ли данные во избежании циклов
     minibatch_size : int (default: 1)
-        Number of training examples per minibatch.
+        Количество обучающих образцов в минипакете
     seed : int (default: None)
-        Random seed for initializing weights and shuffling.
+        
 
     Attributes
     -----------
     eval_ : dict
-      Dictionary collecting the cost, training accuracy,
-      and validation accuracy for each epoch during training.
+      словарь, в котором собираются показатели издержек и правильности
+      при обучении и правильности при испытании для каждой эпохи
 
     """
 
