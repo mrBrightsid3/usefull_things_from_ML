@@ -21,7 +21,7 @@ class NeuralNetMLP(object):
     minibatch_size : int (default: 1)
         Количество обучающих образцов в минипакете
     seed : int (default: None)
-        
+
 
     Attributes
     -----------
@@ -50,14 +50,14 @@ class NeuralNetMLP(object):
         self.minibatch_size = minibatch_size
 
     def _onehot(self, y, n_classes):
-        """Encode labels into one-hot representation
+        """кодирует метки в представление с унитарным кодом
 
         Parameters
         ------------
         y : array, shape = [n_examples]
-            Target values.
+            целевые значения
         n_classes : int
-            Number of classes
+            количество классов
 
         Returns
         -----------
@@ -74,44 +74,46 @@ class NeuralNetMLP(object):
         return 1.0 / (1.0 + np.exp(-np.clip(z, -250, 250)))
 
     def _forward(self, X):
-        """Compute forward propagation step"""
+        """Вычисляет шаг прямого распространения"""
 
-        # step 1: net input of hidden layer
-        # [n_examples, n_features] dot [n_features, n_hidden]
+        # шаг 1: общий вход скрытого слоя
+        # скалярное произведение [n_examples, n_features] и [n_features, n_hidden]
         # -> [n_examples, n_hidden]
         z_h = np.dot(X, self.w_h) + self.b_h
 
-        # step 2: activation of hidden layer
+        # шаг 2: активация скрытого слоя
         a_h = self._sigmoid(z_h)
 
-        # step 3: net input of output layer
-        # [n_examples, n_hidden] dot [n_hidden, n_classlabels]
+        # шаг 3: net input of output layer
+        # скалярное произведение [n_examples, n_hidden] и [n_hidden, n_classlabels]
         # -> [n_examples, n_classlabels]
 
         z_out = np.dot(a_h, self.w_out) + self.b_out
 
-        # step 4: activation output layer
+        # шаг 4: активация выходного слоя
         a_out = self._sigmoid(z_out)
 
         return z_h, a_h, z_out, a_out
 
     def _compute_cost(self, y_enc, output):
-        """Compute cost function.
+        """вычисление логистической функции издержек.
 
         Parameters
         ----------
         y_enc : array, shape = (n_examples, n_labels)
-            one-hot encoded class labels.
+            метки классов в унитарном коде
         output : array, shape = [n_examples, n_output_units]
-            Activation of the output layer (forward propagation)
+            активация выходного слоя
 
         Returns
         ---------
         cost : float
-            Regularized cost
+            Регуляризованные издержки
 
         """
-        L2_term = self.l2 * (np.sum(self.w_h**2.0) + np.sum(self.w_out**2.0))
+        L2_term = self.l2 * (
+            np.sum(self.w_h**2.0) + np.sum(self.w_out**2.0)
+        )  # член регуляризации
 
         term1 = -y_enc * (np.log(output))
         term2 = (1.0 - y_enc) * np.log(1.0 - output)
@@ -139,12 +141,12 @@ class NeuralNetMLP(object):
         Parameters
         -----------
         X : array, shape = [n_examples, n_features]
-            Input layer with original features.
+            входной слой с первоначальными признаками
 
         Returns:
         ----------
         y_pred : array, shape = [n_examples]
-            Predicted class labels.
+            предсказанные метки классов
 
         """
         z_h, a_h, z_out, a_out = self._forward(X)
@@ -218,11 +220,15 @@ class NeuralNetMLP(object):
                 delta_out = a_out - y_train_enc[batch_idx]
 
                 # [n_examples, n_hidden]
-                sigmoid_derivative_h = a_h * (1.0 - a_h)
+                sigmoid_derivative_h = a_h * (
+                    1.0 - a_h
+                )  # вычисление производной сигмоидальной функции
 
                 # [n_examples, n_classlabels] dot [n_classlabels, n_hidden]
                 # -> [n_examples, n_hidden]
-                delta_h = np.dot(delta_out, self.w_out.T) * sigmoid_derivative_h
+                delta_h = (
+                    np.dot(delta_out, self.w_out.T) * sigmoid_derivative_h
+                )  # умнижаем ошибку на выходные веса и на производную
 
                 # [n_features, n_examples] dot [n_examples, n_hidden]
                 # -> [n_features, n_hidden]
@@ -234,9 +240,9 @@ class NeuralNetMLP(object):
                 grad_w_out = np.dot(a_h.T, delta_out)
                 grad_b_out = np.sum(delta_out, axis=0)
 
-                # Regularization and weight updates
+                # обновляем веса с регуляризацией
                 delta_w_h = grad_w_h + self.l2 * self.w_h
-                delta_b_h = grad_b_h  # bias is not regularized
+                delta_b_h = grad_b_h  # член смещения не регуляризуется
                 self.w_h -= self.eta * delta_w_h
                 self.b_h -= self.eta * delta_b_h
 
