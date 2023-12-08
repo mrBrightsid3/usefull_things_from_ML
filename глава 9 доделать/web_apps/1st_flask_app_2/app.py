@@ -15,7 +15,7 @@ def index():
 
 
 @app.route("/hello")
-def hello():  # визуализирует html страницу hello
+def sayhello():  # визуализирует html страницу hello
     form = HelloForm(request.form)
     if request.method == "POST" and form.validate():
         name = request.form["sayhallo"]
